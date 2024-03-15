@@ -4,8 +4,10 @@ import { View } from "react-native";
 
 type Props = ComponentPropsWithClassName<typeof View>;
 
-const Box = ({ className, ...props }: Props) => {
-  return <View style={cn(className)} {...props} />;
+const Box = ({ className, style, ...props }: Props) => {
+  return (
+    <View style={{ ...cn(className), ...((style || {}) as any) }} {...props} />
+  );
 };
 
 export default Box;

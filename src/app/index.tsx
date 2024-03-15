@@ -1,26 +1,31 @@
-import { Text } from "react-native";
 import React from "react";
+import api from "@/lib/api";
+import { useQuery } from "react-query";
+import Text from "@ui/Text";
+import Performance from "./_sections/Performance";
+import Summary from "./_sections/Summary";
+import Storage from "./_sections/Storage";
+import { ScrollView } from "react-native";
 import { cn } from "@/lib/utils";
-import useAPI from "@/hooks/useAPI";
-import { Ionicons } from "@ui/Icons";
-import { VStack } from "@ui/Stack";
-import Button from "@ui/Button";
 
 const App = () => {
-  const { data } = useAPI("/posts/1");
+  const { data: system } = useQuery({
+    queryKey: ["system"],
+    queryFn: () => api.system.$get().then((r) => r.json()),
+    refetchInterval: 1000,
+  });
 
   return (
-    <VStack className="gap-3 p-4">
-      <Text style={cn("text-2xl font-medium")}>App</Text>
-      <Text style={cn("w-full")}>{data?.body}</Text>
+    <ScrollView
+      contentContainerStyle={cn("px-4 py-8 md:py-16")}
+      showsVerticalScrollIndicator={false}
+    >
+      <Text className="text-2xl font-medium">Home Lab</Text>
 
-      <Button label="Click me" />
-      <Button label="Click me" variant="secondary" />
-      <Button label="Click me" variant="ghost" />
-      <Button label="Click me" variant="outline" />
-      <Button label="Click me" variant="destructive" />
-      <Button icon={<Ionicons name="trash" />} size="icon" />
-    </VStack>
+      <Summary data={system} />
+      <Performance data={system} />
+      <Storage data={system} />
+    </ScrollView>
   );
 };
 
