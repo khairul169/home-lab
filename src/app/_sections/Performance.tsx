@@ -48,7 +48,7 @@ const Performance = ({ data: system }: Props) => {
             {system ? (
               <Text className="text-xs">
                 {`${system.perf.cpu.speed.toFixed(1)} GHz / ${
-                  system.perf.cpu.temp
+                  system.perf.cpu.temp || 0
                 }°C`}
               </Text>
             ) : null}

@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { serveStatic } from "hono/bun";
 import { zValidator } from "@hono/zod-validator";
 import z from "zod";
 import si from "systeminformation";
@@ -16,14 +17,12 @@ const secondsToTime = (seconds: number) => {
   const d = Math.floor(seconds / (3600 * 24));
   const h = Math.floor((seconds % (3600 * 24)) / 3600);
   const m = Math.floor((seconds % 3600) / 60);
-  const s = Math.floor(seconds % 60);
+  // const s = Math.floor(seconds % 60);
   return `${d}d ${h}h ${m}m`;
 };
 
 const app = new Hono()
   .use(cors())
-
-  .get("/", (c) => c.text("It works!"))
 
   .get("/system", async (c) => {
     const date = new Date().toISOString();
@@ -51,7 +50,11 @@ const app = new Hono()
 
     const fsMounts = await si.fsSize();
     const storage = fsMounts
-      .filter((i) => i.size > 32 * 1024 * 1024 * 1024)
+      .filter(
+        (i) =>
+          i.size > 32 * 1024 * 1024 * 1024 &&
+          !i.mount.startsWith("/var/lib/docker")
+      )
       .map((i) => ({
         type: i.type,
         mount: i.mount,
@@ -106,7 +109,9 @@ const app = new Hono()
 
       return c.json({ list });
     }
-  );
+  )
+
+  .use("*", serveStatic({ root: "./public" }));
 
 export type AppType = typeof app;
 

@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: homelab-backend
+    restart: unless-stopped
+    ports:
+      - "5050:3000"
