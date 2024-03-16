@@ -7,8 +7,8 @@ import Box from "@ui/Box";
 import Text from "@ui/Text";
 import React, { useEffect, useRef } from "react";
 import "xterm/css/xterm.css";
-import { API_BASEURL } from "@/lib/constants";
-import authStore, { useAuth } from "@/stores/authStore";
+import { BASEURL } from "@/lib/constants";
+import { useAuth } from "@/stores/authStore";
 import { Stack } from "expo-router";
 import BackButton from "@ui/BackButton";
 
@@ -28,7 +28,7 @@ const TerminalPage = () => {
     const fitAddon = new FitAddon();
     term.loadAddon(fitAddon);
 
-    const baseUrl = API_BASEURL.replace("https://", "wss://").replace(
+    const baseUrl = BASEURL.replace("https://", "wss://").replace(
       "http://",
       "ws://"
     );

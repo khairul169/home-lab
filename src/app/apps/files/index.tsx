@@ -1,13 +1,14 @@
 import FileList, { FileItem } from "@/components/pages/files/FileList";
 import { useAsyncStorage } from "@/hooks/useAsyncStorage";
 import api from "@/lib/api";
-import authStore, { useAuth } from "@/stores/authStore";
+import { useAuth } from "@/stores/authStore";
 import BackButton from "@ui/BackButton";
 import Box from "@ui/Box";
 import Input from "@ui/Input";
 import { Stack } from "expo-router";
 import React from "react";
 import { useQuery } from "react-query";
+import { openFile } from "./utils";
 
 const FilesPage = () => {
   const { isLoggedIn } = useAuth();
@@ -49,19 +50,12 @@ const FilesPage = () => {
             return setParams({ ...params, path: file.path });
           }
 
-          downloadFile(file);
+          openFile(file);
         }}
         canGoBack={parentPath != null}
       />
     </>
   );
 };
-
-async function downloadFile(file: FileItem) {
-  const url = api.files.download.$url();
-  url.searchParams.set("path", file.path);
-  url.searchParams.set("token", authStore.getState().token);
-  window.open(url.toString(), "_blank");
-}
 
 export default FilesPage;

@@ -3,9 +3,8 @@ import { Hono } from "hono";
 import { z } from "zod";
 import fs from "node:fs/promises";
 import { HTTPException } from "hono/http-exception";
-import { ReadStream, createReadStream } from "node:fs";
-import { ReadableStream } from "stream/web";
-import mime from "mime";
+import { createReadStream } from "node:fs";
+import { getMimeType } from "../lib/utils";
 
 const getFilesSchema = z
   .object({
@@ -69,89 +68,68 @@ const route = new Hono()
 
     return c.json([]);
   })
-  .get(
-    "/download",
-    zValidator("query", z.object({ path: z.string().min(1) })),
-    async (c) => {
-      const pathname = (c.req.query("path") || "").split("/");
-      const path = "/" + pathname.slice(2).join("/");
-      const baseName = pathname[1];
+  .get("/download/*", async (c) => {
+    const dlFile = c.req.query("dl") === "true";
+    const url = new URL(c.req.url, `http://${c.req.header("host")}`);
+    const pathname = decodeURI(url.pathname).split("/");
+    const pathSlice = pathname.slice(pathname.indexOf("download") + 1);
+    const baseName = pathSlice[0];
+    const path = "/" + pathSlice.slice(1).join("/");
 
-      try {
-        if (!baseName?.length) {
-          throw new Error();
-        }
-
-        const baseDir = filesDirList.find((i) => i.name === baseName)?.path;
-        if (!baseDir) {
-          throw new Error();
-        }
-
-        const filepath = baseDir + path;
-        const stat = await fs.stat(filepath);
-        const size = stat.size;
-
-        // c.header("Content-Type", "application/octet-stream");
-        // c.header("Content-Disposition", `attachment; filename="${path}"`);
-
-        c.header(
-          "Content-Type",
-          mime.getType(filepath) || "application/octet-stream"
-        );
-
-        if (c.req.method == "HEAD" || c.req.method == "OPTIONS") {
-          c.header("Content-Length", size.toString());
-          c.status(200);
-          return c.body(null);
-        }
-
-        const range = c.req.header("range") || "";
-
-        if (!range) {
-          c.header("Content-Length", size.toString());
-          return c.body(createStreamBody(createReadStream(filepath)), 200);
-        }
-
-        c.header("Accept-Ranges", "bytes");
-        c.header("Date", stat.birthtime.toUTCString());
-
-        const parts = range.replace(/bytes=/, "").split("-", 2);
-        const start = parts[0] ? parseInt(parts[0], 10) : 0;
-        let end = parts[1] ? parseInt(parts[1], 10) : stat.size - 1;
-        if (size < end - start + 1) {
-          end = size - 1;
-        }
-
-        const chunksize = end - start + 1;
-        const stream = createReadStream(filepath, { start, end });
-
-        c.header("Content-Length", chunksize.toString());
-        c.header("Content-Range", `bytes ${start}-${end}/${stat.size}`);
-
-        return c.body(createStreamBody(stream), 206);
-      } catch (err) {
-        console.error(err);
-        throw new HTTPException(404, { message: "Not Found!" });
+    try {
+      if (!baseName?.length) {
+        throw new Error();
       }
+
+      const baseDir = filesDirList.find((i) => i.name === baseName)?.path;
+      if (!baseDir) {
+        throw new Error();
+      }
+
+      const filepath = baseDir + path;
+      const stat = await fs.stat(filepath);
+      const size = stat.size;
+
+      if (dlFile) {
+        c.header("Content-Type", "application/octet-stream");
+        c.header("Content-Disposition", `attachment; filename="${path}"`);
+      } else {
+        c.header("Content-Type", getMimeType(filepath));
+      }
+
+      if (c.req.method == "HEAD" || c.req.method == "OPTIONS") {
+        c.header("Content-Length", size.toString());
+        c.status(200);
+        return c.body(null);
+      }
+
+      const range = c.req.header("range") || "";
+
+      if (!range || dlFile) {
+        c.header("Content-Length", size.toString());
+        return c.body(createReadStream(filepath), 200);
+      }
+
+      c.header("Accept-Ranges", "bytes");
+      c.header("Date", stat.birthtime.toUTCString());
+
+      const parts = range.replace(/bytes=/, "").split("-", 2);
+      const start = parts[0] ? parseInt(parts[0], 10) : 0;
+      let end = parts[1] ? parseInt(parts[1], 10) : stat.size - 1;
+      if (size < end - start + 1) {
+        end = size - 1;
+      }
+
+      const chunksize = end - start + 1;
+      const stream = createReadStream(filepath, { start, end });
+
+      c.header("Content-Length", chunksize.toString());
+      c.header("Content-Range", `bytes ${start}-${end}/${stat.size}`);
+
+      return c.body(stream, 206);
+    } catch (err) {
+      throw new HTTPException(404, { message: "Not Found!" });
     }
-  );
-
-const createStreamBody = (stream: ReadStream) => {
-  const body = new ReadableStream({
-    start(controller) {
-      stream.on("data", (chunk) => {
-        controller.enqueue(chunk);
-      });
-      stream.on("end", () => {
-        controller.close();
-      });
-    },
-
-    cancel() {
-      stream.destroy();
-    },
   });
-  return body;
-};
 
 export default route;

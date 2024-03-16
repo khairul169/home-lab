@@ -1,3 +1,7 @@
+import { Mime } from "mime/lite";
+import standardTypes from "mime/types/standard.js";
+import otherTypes from "mime/types/other.js";
+
 export const formatBytes = (bytes: number) => {
   const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
   if (bytes === 0) return "n/a";
@@ -12,4 +16,16 @@ export const secondsToTime = (seconds: number) => {
   const m = Math.floor((seconds % 3600) / 60);
   // const s = Math.floor(seconds % 60);
   return `${d}d ${h}h ${m}m`;
+};
+
+export const mime = new Mime(standardTypes, otherTypes);
+mime.define(
+  {
+    "video/webm": ["mkv"],
+  },
+  true
+);
+
+export const getMimeType = (path: string) => {
+  return mime.getType(path) || "application/octet-stream";
 };

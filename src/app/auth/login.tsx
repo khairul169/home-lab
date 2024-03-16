@@ -13,7 +13,7 @@ import { useMutation } from "react-query";
 import api from "@/lib/api";
 import Alert from "@ui/Alert";
 import { setAuthToken } from "@/stores/authStore";
-import { router } from "expo-router";
+import { Stack, router } from "expo-router";
 
 const schema = z.object({
   username: z.string().min(1),
@@ -44,6 +44,7 @@ const LoginPage = () => {
     <ScrollView
       contentContainerStyle={cn("flex-1 flex items-center justify-center")}
     >
+      <Stack.Screen options={{ headerShown: false }} />
       <Container className="p-4">
         <Box className="p-8 bg-white rounded-lg">
           <Text className="text-2xl">Login</Text>
