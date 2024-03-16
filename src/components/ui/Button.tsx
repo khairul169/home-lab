@@ -60,6 +60,7 @@ interface ButtonProps
   labelClasses?: string;
   className?: string;
   icon?: React.ReactNode;
+  iconClassName?: string;
   children?: string;
 }
 function Button({
@@ -69,12 +70,15 @@ function Button({
   variant,
   size,
   icon,
+  iconClassName,
   children,
   ...props
 }: ButtonProps) {
-  const textStyles = cn(
-    buttonTextVariants({ variant, size, className: labelClasses })
-  );
+  const textStyles = buttonTextVariants({
+    variant,
+    size,
+    className: labelClasses,
+  });
 
   return (
     <Pressable
@@ -86,10 +90,12 @@ function Button({
       }
       {...props}
     >
-      {icon ? <Slot.View style={textStyles}>{icon}</Slot.View> : null}
+      {icon ? (
+        <Slot.View style={cn(textStyles, iconClassName)}>{icon}</Slot.View>
+      ) : null}
 
       {label || children ? (
-        <Text style={textStyles}>{label || children}</Text>
+        <Text style={cn(textStyles)}>{label || children}</Text>
       ) : null}
     </Pressable>
   );

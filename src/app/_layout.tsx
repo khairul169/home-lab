@@ -7,8 +7,10 @@ import { cn, tw } from "@/lib/utils";
 import { useDeviceContext } from "twrnc";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Toast from "react-native-toast-notifications";
 import { useStore } from "zustand";
 import authStore from "@/stores/authStore";
+import { toastStore } from "@/stores/toastStore";
 
 const RootLayout = () => {
   const insets = useSafeAreaInsets();
@@ -39,6 +41,11 @@ const RootLayout = () => {
       <View style={cn("flex-1 bg-[#f2f7fb]", { paddingTop: insets.top })}>
         <Slot />
       </View>
+      <Toast
+        ref={(ref) => {
+          toastStore.setState(ref);
+        }}
+      />
     </QueryClientProvider>
   );
 };

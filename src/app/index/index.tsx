@@ -7,6 +7,9 @@ import Summary from "./_sections/Summary";
 import Storage from "./_sections/Storage";
 import Container from "@ui/Container";
 import { useAuth } from "@/stores/authStore";
+import { HStack } from "@ui/Stack";
+import Box from "@ui/Box";
+import Apps from "./_sections/Apps";
 
 const HomePage = () => {
   const { isLoggedIn } = useAuth();
@@ -22,12 +25,17 @@ const HomePage = () => {
   }
 
   return (
-    <Container scrollable className="px-4 py-8 md:py-16">
-      <Text className="text-2xl font-medium">Home Lab</Text>
-
-      <Summary data={system} />
-      <Performance data={system} />
-      <Storage data={system} />
+    <Container scrollable className="px-4 md:px-8 max-w-none py-8">
+      <HStack className="items-start gap-8">
+        <Box className="flex-1 md:max-w-lg">
+          <Text className="text-2xl font-medium">Home Lab</Text>
+          <Summary data={system} />
+          <Apps className="md:hidden mt-6" />
+          <Performance data={system} />
+          <Storage data={system} />
+        </Box>
+        <Apps className="hidden md:flex md:flex-col md:flex-1" />
+      </HStack>
     </Container>
   );
 };

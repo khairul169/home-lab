@@ -1,8 +1,11 @@
+import "dotenv/config";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { serveStatic } from "hono/bun";
 import { HTTPException } from "hono/http-exception";
+import { serveStatic } from "@hono/node-server/serve-static";
+import { serve } from "@hono/node-server";
 import routes from "./routes/_routes";
+import createWsServer from "./websocket";
 
 const app = new Hono()
   .use(cors())
@@ -15,4 +18,8 @@ const app = new Hono()
     return c.json({ message: err.message }, 500);
   });
 
-export default app;
+const server = serve(app, (info) => {
+  console.log(`App listening on http://${info.address}:${info.port}`);
+});
+
+createWsServer(server);
