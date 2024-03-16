@@ -38,6 +38,8 @@ const LoginPage = () => {
     },
   });
 
+  const onSubmit = form.handleSubmit((val) => login.mutate(val));
+
   return (
     <ScrollView
       contentContainerStyle={cn("flex-1 flex items-center justify-center")}
@@ -51,6 +53,7 @@ const LoginPage = () => {
             form={form}
             path="username"
             className="mt-6"
+            onSubmitEditing={onSubmit}
           />
           <Input
             label="Password"
@@ -58,14 +61,12 @@ const LoginPage = () => {
             path="password"
             className="mt-4"
             secureTextEntry
+            onSubmitEditing={onSubmit}
           />
 
           <Alert className="mt-4" error={login.error} />
 
-          <Button
-            className="mt-8"
-            onPress={form.handleSubmit((val) => login.mutate(val))}
-          >
+          <Button className="mt-8" onPress={onSubmit}>
             Login
           </Button>
         </Box>

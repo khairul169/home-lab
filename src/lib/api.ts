@@ -10,7 +10,7 @@ import type {
 import type { AppType } from "../../backend/routes/_routes";
 import authStore, { logout } from "@/stores/authStore";
 
-const api: ReturnType<typeof hono<AppType>> = hc(API_BASEURL, {
+const api: ReturnType<typeof hono<AppType>> = hc(API_BASEURL + "/api", {
   fetch: fetchHandler,
 });
 
