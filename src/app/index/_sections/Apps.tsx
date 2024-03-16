@@ -19,7 +19,7 @@ const Apps = (props: Props) => {
       path: "terminal",
     },
     {
-      name: "PC Control",
+      name: "Turn on PC",
       icon: <Ionicons name="desktop" />,
       action: wakePcUp,
     },
