@@ -18,8 +18,11 @@ const app = new Hono()
     return c.json({ message: err.message }, 500);
   });
 
-const server = serve(app, (info) => {
-  console.log(`App listening on http://${info.address}:${info.port}`);
-});
+const server = serve(
+  { fetch: app.fetch, port: parseInt(process.env.PORT || "") || 3000 },
+  (info) => {
+    console.log(`App listening on http://${info.address}:${info.port}`);
+  }
+);
 
 createWsServer(server);
