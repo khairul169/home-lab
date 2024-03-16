@@ -1,0 +1,13 @@
+diff --git a/node_modules/react-native-circular-progress/src/CircularProgress.js b/node_modules/react-native-circular-progress/src/CircularProgress.js
+index 3de2d77..0265a0f 100644
+--- a/node_modules/react-native-circular-progress/src/CircularProgress.js
++++ b/node_modules/react-native-circular-progress/src/CircularProgress.js
+@@ -132,7 +132,7 @@ export default class CircularProgress extends React.PureComponent {
+ }
+ 
+ CircularProgress.propTypes = {
+-  style: PropTypes.object,
++  style: PropTypes.any,
+   size: PropTypes.oneOfType([
+     PropTypes.number,
+     PropTypes.instanceOf(Animated.Value),

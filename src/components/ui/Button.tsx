@@ -54,12 +54,13 @@ const buttonTextVariants = cva("text-center font-medium", {
 });
 
 interface ButtonProps
-  extends React.ComponentPropsWithoutRef<typeof Pressable>,
+  extends Omit<React.ComponentPropsWithoutRef<typeof Pressable>, "children">,
     VariantProps<typeof buttonVariants> {
   label?: string;
   labelClasses?: string;
   className?: string;
   icon?: React.ReactNode;
+  children?: string;
 }
 function Button({
   label,
@@ -68,6 +69,7 @@ function Button({
   variant,
   size,
   icon,
+  children,
   ...props
 }: ButtonProps) {
   const textStyles = cn(
@@ -86,7 +88,9 @@ function Button({
     >
       {icon ? <Slot.View style={textStyles}>{icon}</Slot.View> : null}
 
-      {label ? <Text style={textStyles}>{label}</Text> : null}
+      {label || children ? (
+        <Text style={textStyles}>{label || children}</Text>
+      ) : null}
     </Pressable>
   );
 }

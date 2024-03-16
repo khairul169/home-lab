@@ -6,7 +6,6 @@ import Text from "@ui/Text";
 import { HStack, VStack } from "@ui/Stack";
 import Box from "@ui/Box";
 import ProcessList from "./ProcessList";
-import Divider from "@ui/Divider";
 import Button from "@ui/Button";
 import { Ionicons } from "@ui/Icons";
 
