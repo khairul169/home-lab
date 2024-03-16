@@ -6,6 +6,7 @@ import { HStack } from "@ui/Stack";
 import Button from "@ui/Button";
 import { useNavigation } from "expo-router";
 import { wakePcUp } from "@/app/apps/lib";
+import { showDialog } from "@/stores/dialogStore";
 
 type Props = ComponentProps<typeof Box>;
 
@@ -21,7 +22,12 @@ const Apps = (props: Props) => {
     {
       name: "Turn on PC",
       icon: <Ionicons name="desktop" />,
-      action: wakePcUp,
+      action: () =>
+        showDialog(
+          "Turn on PC",
+          "Are you sure wanna turn on the PC?",
+          wakePcUp
+        ),
     },
   ];
 

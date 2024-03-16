@@ -34,6 +34,7 @@ const HomePage = () => {
           <Performance data={system} />
           <Storage data={system} />
         </Box>
+
         <Apps className="hidden md:flex md:flex-col md:flex-1" />
       </HStack>
     </Container>

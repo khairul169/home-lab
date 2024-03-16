@@ -11,6 +11,7 @@ import Toast from "react-native-toast-notifications";
 import { useStore } from "zustand";
 import authStore from "@/stores/authStore";
 import { toastStore } from "@/stores/toastStore";
+import Dialog from "@ui/Dialog";
 
 const RootLayout = () => {
   const insets = useSafeAreaInsets();
@@ -46,6 +47,7 @@ const RootLayout = () => {
           toastStore.setState(ref);
         }}
       />
+      <Dialog />
     </QueryClientProvider>
   );
 };
