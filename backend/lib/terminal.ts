@@ -9,7 +9,7 @@ export const createTerminalSession = (client: TerminalClient) => {
     name: "xterm-color",
     cols: 80,
     rows: 24,
-    cwd: process.env.PWD,
+    cwd: process.env.TERMINAL_PWD || process.env.PWD,
     env: process.env,
   });
   client.tty = tty;
