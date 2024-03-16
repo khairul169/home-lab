@@ -5,8 +5,8 @@ import { Ionicons } from "@ui/Icons";
 import { HStack } from "@ui/Stack";
 import Button from "@ui/Button";
 import { useNavigation } from "expo-router";
-import { wakePcUp } from "@/app/apps/lib";
 import { showDialog } from "@/stores/dialogStore";
+import { wakePcUp } from "@/app/apps/lib";
 
 type Props = ComponentProps<typeof Box>;
 
@@ -14,6 +14,11 @@ const Apps = (props: Props) => {
   const navigation = useNavigation();
 
   const appList = [
+    {
+      name: "Files",
+      icon: <Ionicons name="folder" />,
+      path: "files/index",
+    },
     {
       name: "Terminal",
       icon: <Ionicons name="terminal" />,

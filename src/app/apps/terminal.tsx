@@ -9,6 +9,8 @@ import React, { useEffect, useRef } from "react";
 import "xterm/css/xterm.css";
 import { API_BASEURL } from "@/lib/constants";
 import authStore, { useAuth } from "@/stores/authStore";
+import { Stack } from "expo-router";
+import BackButton from "@ui/BackButton";
 
 const isWeb = Platform.OS === "web";
 
@@ -83,10 +85,15 @@ const TerminalPage = () => {
   }
 
   return (
-    <div
-      ref={terminalRef}
-      style={{ height: "100vh", background: "#1d1e2b", padding: 16 }}
-    />
+    <>
+      <Stack.Screen
+        options={{ title: "Terminal", headerLeft: () => <BackButton /> }}
+      />
+      <div
+        ref={terminalRef}
+        style={{ height: "100vh", background: "#1d1e2b", padding: 16 }}
+      />
+    </>
   );
 };
 

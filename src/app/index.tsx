@@ -2,14 +2,15 @@ import React from "react";
 import api from "@/lib/api";
 import { useQuery } from "react-query";
 import Text from "@ui/Text";
-import Performance from "./_sections/Performance";
-import Summary from "./_sections/Summary";
-import Storage from "./_sections/Storage";
+import Performance from "../components/pages/home/Performance";
+import Summary from "../components/pages/home/Summary";
+import Storage from "../components/pages/home/Storage";
 import Container from "@ui/Container";
 import { useAuth } from "@/stores/authStore";
 import { HStack } from "@ui/Stack";
 import Box from "@ui/Box";
-import Apps from "./_sections/Apps";
+import Apps from "../components/pages/home/Apps";
+import { Stack } from "expo-router";
 
 const HomePage = () => {
   const { isLoggedIn } = useAuth();
@@ -26,6 +27,8 @@ const HomePage = () => {
 
   return (
     <Container scrollable className="px-4 md:px-8 max-w-none py-8">
+      <Stack.Screen options={{ headerShown: false, title: "Home Lab" }} />
+
       <HStack className="items-start gap-8">
         <Box className="flex-1 md:max-w-lg">
           <Text className="text-2xl font-medium">Home Lab</Text>

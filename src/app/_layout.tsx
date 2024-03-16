@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Slot, router, usePathname } from "expo-router";
+import { Slot, Stack, router, usePathname } from "expo-router";
 import { QueryClientProvider } from "react-query";
 import queryClient from "@/lib/queryClient";
 import { View } from "react-native";
@@ -40,7 +40,9 @@ const RootLayout = () => {
     <QueryClientProvider client={queryClient}>
       <StatusBar style="auto" />
       <View style={cn("flex-1 bg-[#f2f7fb]", { paddingTop: insets.top })}>
-        <Slot />
+        <Stack
+          screenOptions={{ contentStyle: { backgroundColor: "#f2f7fb" } }}
+        />
       </View>
       <Toast
         ref={(ref) => {

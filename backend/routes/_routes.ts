@@ -3,6 +3,7 @@ import auth from "./auth";
 import system from "./system";
 import _process from "./process";
 import apps from "./apps";
+import files from "./files";
 import { authMiddleware } from "../lib/jwt";
 
 const routes = new Hono()
@@ -10,7 +11,8 @@ const routes = new Hono()
   .use(authMiddleware)
   .route("/system", system)
   .route("/process", _process)
-  .route("/apps", apps);
+  .route("/apps", apps)
+  .route("/files", files);
 
 export type AppType = typeof routes;
 
