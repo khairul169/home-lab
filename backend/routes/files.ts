@@ -13,6 +13,11 @@ const getFilesSchema = z
   .partial()
   .optional();
 
+const uploadSchema = z.object({
+  path: z.string().min(1),
+  size: z.string().min(1),
+});
+
 const filesDirList = process.env.FILE_DIRS
   ? process.env.FILE_DIRS.split(";").map((i) => ({
       name: i.split("/").at(-1),
@@ -67,6 +72,50 @@ const route = new Hono()
     } catch (err) {}
 
     return c.json([]);
+  })
+  .post("/upload", async (c) => {
+    const input: any = (await c.req.parseBody()) as never;
+    const data = await uploadSchema.parseAsync(input);
+
+    const size = parseInt(input.size);
+    if (Number.isNaN(size) || !size) {
+      throw new HTTPException(400, { message: "Size is empty!" });
+    }
+
+    const files: File[] = [...Array(size)]
+      .map((_, idx) => input[`files.${idx}`])
+      .filter((i) => !!i);
+
+    if (!files.length) {
+      throw new HTTPException(400, { message: "Files is empty!" });
+    }
+
+    const pathSlices = data.path.split("/");
+    const baseName = pathSlices[1] || null;
+    const path = pathSlices.slice(2).join("/");
+    const baseDir = filesDirList.find((i) => i.name === baseName)?.path;
+    if (!baseDir?.length) {
+      throw new HTTPException(400, { message: "Path not found!" });
+    }
+
+    const targetDir = [baseDir, path].join("/");
+
+    // files.forEach((file) => {
+    //   const filepath = targetDir + "/" + file.name;
+    //   if (existsSync(filepath)) {
+    //     throw new HTTPException(400, { message: "File already exists!" });
+    //   }
+    // });
+
+    await Promise.all(
+      files.map(async (file) => {
+        const filepath = targetDir + "/" + file.name;
+        const buffer = await file.arrayBuffer();
+        await fs.writeFile(filepath, new Uint8Array(buffer));
+      })
+    );
+
+    return c.json({ success: true });
   })
   .get("/download/*", async (c) => {
     const dlFile = c.req.query("dl") === "true";
@@ -131,5 +180,24 @@ const route = new Hono()
       throw new HTTPException(404, { message: "Not Found!" });
     }
   });
+
+function getFilePath(path: string) {
+  const pathSlices = path.split("/");
+  const baseName = pathSlices[1] || null;
+  const filePath = pathSlices.slice(2).join("/");
+
+  const baseDir = filesDirList.find((i) => i.name === baseName)?.path;
+  if (!baseDir?.length) {
+    throw new HTTPException(400, { message: "Path not found!" });
+  }
+
+  return {
+    path: [baseDir, filePath].join("/"),
+    pathname: ["", baseName, filePath].join("/"),
+    baseName,
+    baseDir,
+    filePath,
+  };
+}
 
 export default route;

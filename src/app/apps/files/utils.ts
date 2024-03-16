@@ -1,6 +1,6 @@
-import { FileItem } from "@/components/pages/files/FileList";
 import { API_BASEURL } from "@/lib/constants";
 import authStore from "@/stores/authStore";
+import { FileItem } from "@/types/files";
 
 export function openFile(file: FileItem, dl = false) {
   const url = getFileUrl(file, dl);

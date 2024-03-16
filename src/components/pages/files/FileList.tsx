@@ -1,48 +1,54 @@
-import { FlatList, Pressable } from "react-native";
-import React, { useMemo } from "react";
+import { FlatList } from "react-native";
+import React from "react";
 import Text from "@ui/Text";
 import { HStack } from "@ui/Stack";
 import { cn } from "@/lib/utils";
 import { Ionicons } from "@ui/Icons";
-
-export type FileItem = {
-  name: string;
-  path: string;
-  isDirectory: boolean;
-};
+import Button from "@ui/Button";
+import Pressable from "@ui/Pressable";
+import { FileItem } from "@/types/files";
+import FileMenu, { openFileMenu } from "./FileMenu";
 
 type FileListProps = {
   files?: FileItem[];
   onSelect?: (file: FileItem) => void;
-  canGoBack?: boolean;
+  // onMenu?: (file: FileItem) => void;
+  onLongPress?: (file: FileItem) => void;
 };
 
-const FileList = ({ files, onSelect, canGoBack }: FileListProps) => {
-  const fileList = useMemo(() => {
-    if (canGoBack) {
-      return [{ name: "..", path: "..", isDirectory: true }, ...(files || [])];
-    }
-    return files || [];
-  }, [files, canGoBack]);
-
+const FileList = ({ files, onSelect, onLongPress }: FileListProps) => {
   return (
-    <FlatList
-      contentContainerStyle={cn("bg-white")}
-      data={fileList || []}
-      renderItem={({ item }) => (
-        <FileItem file={item} onPress={() => onSelect?.(item)} />
-      )}
-      keyExtractor={(item) => item.path}
-    />
+    <>
+      <FlatList
+        style={cn("flex-1")}
+        contentContainerStyle={cn("bg-white")}
+        data={files || []}
+        renderItem={({ item }) => (
+          <FileItemList
+            file={item}
+            onPress={() => onSelect?.(item)}
+            onLongPress={() => onLongPress?.(item)}
+            onMenuPress={() => openFileMenu(item)}
+          />
+        )}
+        keyExtractor={(item) => item.path}
+      />
+
+      <FileMenu />
+    </>
   );
 };
 
-const FileItem = ({
+const FileItemList = ({
   file,
   onPress,
+  onLongPress,
+  onMenuPress,
 }: {
   file: FileItem;
   onPress?: () => void;
+  onLongPress?: () => void;
+  onMenuPress?: () => void;
 }) => {
   return (
     <HStack className="bg-white border-b border-gray-200 items-center">
@@ -54,6 +60,13 @@ const FileItem = ({
           )
         }
         onPress={onPress}
+        onLongPress={onLongPress}
+        onContextMenu={(e) => {
+          if (onMenuPress) {
+            e.preventDefault();
+            onMenuPress();
+          }
+        }}
       >
         <Ionicons
           name={file.isDirectory ? "folder" : "document"}
@@ -64,6 +77,12 @@ const FileItem = ({
         />
         <Text numberOfLines={1}>{file.name}</Text>
       </Pressable>
+      <Button
+        icon={<Ionicons name="ellipsis-vertical" />}
+        variant="ghost"
+        className="h-full px-4"
+        onPress={onMenuPress}
+      />
     </HStack>
   );
 };
