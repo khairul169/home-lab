@@ -5,7 +5,7 @@ import { useAuth } from "@/stores/authStore";
 import BackButton from "@ui/BackButton";
 import Input from "@ui/Input";
 import { Stack, router, useLocalSearchParams } from "expo-router";
-import React from "react";
+import React, { useState } from "react";
 import { useMutation, useQuery } from "react-query";
 import FileDrop from "@/components/pages/files/FileDrop";
 import { showToast } from "@/stores/toastStore";
@@ -15,12 +15,14 @@ import { Ionicons } from "@ui/Icons";
 import FileInlineViewer from "@/components/pages/files/FileInlineViewer";
 import { decodeUrl, encodeUrl } from "@/lib/utils";
 import { FilesContext } from "@/components/pages/files/FilesContext";
+import { FileItem } from "@/types/files";
 
 const FilesPage = () => {
   const { isLoggedIn } = useAuth();
   const [params, setParams] = useAsyncStorage("files", {
     path: "",
   });
+  const [viewFile, setViewFile] = useState<FileItem | null>(null);
   const searchParams = useLocalSearchParams();
   const parentPath =
     params.path.length > 0
@@ -64,7 +66,7 @@ const FilesPage = () => {
   }
 
   return (
-    <FilesContext.Provider value={{ files: data }}>
+    <FilesContext.Provider value={{ files: data, viewFile, setViewFile }}>
       <Stack.Screen
         options={{ headerLeft: () => <BackButton />, title: "Files" }}
       />
@@ -98,15 +100,16 @@ const FilesPage = () => {
           files={data}
           onSelect={(file) => {
             if (file.isDirectory) {
-              return setParams({ ...params, path: file.path });
+              setParams({ ...params, path: file.path });
+            } else {
+              setViewFile(file);
             }
-            router.push("/apps/files?view=" + encodeUrl(file.path));
           }}
         />
       </FileDrop>
 
       <FileInlineViewer
-        path={decodeUrl(searchParams.view as string)}
+        file={viewFile}
         onClose={() => {
           if (router.canGoBack()) {
             router.back();

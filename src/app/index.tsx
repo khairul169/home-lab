@@ -11,14 +11,17 @@ import { HStack } from "@ui/Stack";
 import Box from "@ui/Box";
 import Apps from "../components/pages/home/Apps";
 import { Stack } from "expo-router";
+import { useIsFocused } from "@/hooks/useIsFocused";
 
 const HomePage = () => {
   const { isLoggedIn } = useAuth();
+  const isFocused = useIsFocused();
+
   const { data: system } = useQuery({
     queryKey: ["system"],
     queryFn: () => api.system.$get().then((r) => r.json()),
     refetchInterval: 1000,
-    enabled: isLoggedIn,
+    enabled: isLoggedIn && isFocused,
   });
 
   if (!isLoggedIn) {

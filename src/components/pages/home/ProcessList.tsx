@@ -1,3 +1,4 @@
+import { useIsFocused } from "@/hooks/useIsFocused";
 import api from "@/lib/api";
 import Box from "@ui/Box";
 import Button from "@ui/Button";
@@ -8,6 +9,7 @@ import { useQuery } from "react-query";
 
 const ProcessList = () => {
   const [sort, setSort] = useState<string>("mem");
+  const isFocused = useIsFocused();
 
   const { data } = useQuery({
     queryKey: ["process", sort],
@@ -18,6 +20,7 @@ const ProcessList = () => {
     },
     select: (i) => i.list,
     refetchInterval: 1000,
+    enabled: isFocused,
   });
 
   return (

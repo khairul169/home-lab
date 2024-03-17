@@ -9,17 +9,18 @@ import Modal from "react-native-modal";
 import { Video, ResizeMode } from "expo-av";
 import { getFileUrl, openFile } from "@/app/apps/files/utils";
 import { Image } from "react-native";
-import AudioPlayer from "@ui/AudioPlayer";
+import AudioPlayer from "@/components/containers/AudioPlayer";
+import { FileItem } from "@/types/files";
 
 type Props = {
-  path?: string | null;
+  file?: FileItem | null;
   onClose?: () => void;
 };
 
-const FileViewer = ({ path }: Pick<Props, "path">) => {
+const FileViewer = ({ file }: Pick<Props, "file">) => {
   const videoPlayerRef = useRef<Video>(null!);
-  const fileType = getFileType(path);
-  const uri = getFileUrl(path);
+  const fileType = getFileType(file.path);
+  const uri = getFileUrl(file.path);
 
   if (fileType === "video") {
     return (
@@ -36,7 +37,7 @@ const FileViewer = ({ path }: Pick<Props, "path">) => {
   }
 
   if (fileType === "audio") {
-    return <AudioPlayer path={path} uri={uri} />;
+    return <AudioPlayer path={file.path} uri={uri} />;
   }
 
   if (fileType === "image") {
@@ -51,18 +52,22 @@ const FileViewer = ({ path }: Pick<Props, "path">) => {
 
   return (
     <Box className="w-full flex-1 flex flex-col items-center justify-center">
-      <Button onPress={() => openFile(path)}>Open File</Button>
+      <Button onPress={() => openFile(file.path)}>Open File</Button>
     </Box>
   );
 };
 
-const FileInlineViewer = ({ path, onClose }: Props) => {
-  const filename = path?.split("/").pop();
+const FileInlineViewer = ({ file, onClose }: Props) => {
+  const filename = file?.path?.split("/").pop();
 
   return (
-    <Modal isVisible={!!path} onBackButtonPress={onClose} style={cn("m-0")}>
+    <Modal
+      isVisible={!!file?.path}
+      onBackButtonPress={onClose}
+      style={cn("m-0")}
+    >
       <Box className="flex-1 w-full bg-gray-950">
-        <HStack className="gap-2 p-2 bg-gray-900 relative z-10">
+        <HStack className="gap-2 p-2 bg-black border-b border-gray-800 relative z-10">
           <Button
             icon={<Ionicons name="arrow-back" />}
             iconClassName="text-white"
@@ -77,18 +82,18 @@ const FileInlineViewer = ({ path, onClose }: Props) => {
             icon={<Ionicons name="download-outline" />}
             iconClassName="text-white text-xl"
             className="px-3"
-            onPress={() => openFile(path, true)}
+            onPress={() => openFile(file?.path, true)}
             variant="ghost"
           />
           <Button
             icon={<Ionicons name="open-outline" />}
             iconClassName="text-white text-xl"
             className="px-3"
-            onPress={() => openFile(path)}
+            onPress={() => openFile(file?.path)}
           />
         </HStack>
 
-        <FileViewer path={path} />
+        {file ? <FileViewer file={file} /> : null}
       </Box>
     </Modal>
   );
