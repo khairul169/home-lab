@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import ActionSheet from "@ui/ActionSheet";
 import { HStack } from "@ui/Stack";
 import Button from "@ui/Button";
+import { openFile } from "@/app/apps/files/utils";
 
 type Store = {
   isVisible: boolean;
@@ -27,6 +28,11 @@ const FileMenu = () => {
   const { isVisible, file } = useStore(store);
   const onClose = () => store.setState({ isVisible: false });
 
+  const onDownload = () => {
+    openFile(file, true);
+    onClose();
+  };
+
   return (
     <ActionSheet isVisible={isVisible} onClose={onClose}>
       <Text className="text-lg md:text-xl" numberOfLines={1}>
@@ -37,10 +43,13 @@ const FileMenu = () => {
         <List.Item icon={<Ionicons name="pencil" />}>Rename</List.Item>
         <List.Item icon={<Ionicons name="copy" />}>Copy</List.Item>
         <List.Item icon={<Ionicons name="cut-outline" />}>Move</List.Item>
+        <List.Item icon={<Ionicons name="download" />} onPress={onDownload}>
+          Download
+        </List.Item>
         <List.Item icon={<Ionicons name="trash" />}>Delete</List.Item>
       </List>
 
-      <HStack className="justify-end mt-6">
+      <HStack className="justify-end mt-6 hidden md:flex">
         <Button variant="ghost" onPress={onClose}>
           Cancel
         </Button>

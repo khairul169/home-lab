@@ -4,21 +4,24 @@ import api from "@/lib/api";
 import { useAuth } from "@/stores/authStore";
 import BackButton from "@ui/BackButton";
 import Input from "@ui/Input";
-import { Stack } from "expo-router";
+import { Stack, router, useLocalSearchParams } from "expo-router";
 import React from "react";
 import { useMutation, useQuery } from "react-query";
-import { openFile } from "./utils";
 import FileDrop from "@/components/pages/files/FileDrop";
 import { showToast } from "@/stores/toastStore";
 import { HStack } from "@ui/Stack";
 import Button from "@ui/Button";
 import { Ionicons } from "@ui/Icons";
+import FileInlineViewer from "@/components/pages/files/FileInlineViewer";
+import { decodeUrl, encodeUrl } from "@/lib/utils";
+import { FilesContext } from "@/components/pages/files/FilesContext";
 
 const FilesPage = () => {
   const { isLoggedIn } = useAuth();
   const [params, setParams] = useAsyncStorage("files", {
     path: "",
   });
+  const searchParams = useLocalSearchParams();
   const parentPath =
     params.path.length > 0
       ? params.path.split("/").slice(0, -1).join("/")
@@ -56,8 +59,12 @@ const FilesPage = () => {
     }
   };
 
+  if (!isLoggedIn) {
+    return null;
+  }
+
   return (
-    <>
+    <FilesContext.Provider value={{ files: data }}>
       <Stack.Screen
         options={{ headerLeft: () => <BackButton />, title: "Files" }}
       />
@@ -70,6 +77,13 @@ const FilesPage = () => {
           labelClasses="text-gray-500"
           variant="outline"
           onPress={() => setParams({ ...params, path: parentPath })}
+        />
+        <Button
+          icon={<Ionicons name="home-outline" />}
+          className="px-3 border-gray-300"
+          labelClasses="text-gray-500"
+          variant="outline"
+          onPress={() => setParams({ ...params, path: "" })}
         />
         <Input
           placeholder="/"
@@ -86,11 +100,22 @@ const FilesPage = () => {
             if (file.isDirectory) {
               return setParams({ ...params, path: file.path });
             }
-            openFile(file);
+            router.push("/apps/files?view=" + encodeUrl(file.path));
           }}
         />
       </FileDrop>
-    </>
+
+      <FileInlineViewer
+        path={decodeUrl(searchParams.view as string)}
+        onClose={() => {
+          if (router.canGoBack()) {
+            router.back();
+          } else {
+            router.replace("/apps/files");
+          }
+        }}
+      />
+    </FilesContext.Provider>
   );
 };
 

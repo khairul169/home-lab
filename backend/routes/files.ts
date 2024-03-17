@@ -28,9 +28,7 @@ const filesDirList = process.env.FILE_DIRS
 const route = new Hono()
   .get("/", zValidator("query", getFilesSchema), async (c) => {
     const input: z.infer<typeof getFilesSchema> = c.req.query();
-    const pathname = (input.path || "").split("/");
-    const path = pathname.slice(2).join("/");
-    const baseName = pathname[1];
+    const { baseName, path, pathname } = getFilePath(input.path);
 
     if (!baseName?.length) {
       return c.json(
@@ -42,20 +40,14 @@ const route = new Hono()
       );
     }
 
-    const baseDir = filesDirList.find((i) => i.name === baseName)?.path;
-    if (!baseDir) {
-      return c.json([]);
-    }
-
     try {
-      const cwd = baseDir + "/" + path;
-      const entities = await fs.readdir(cwd, { withFileTypes: true });
+      const entities = await fs.readdir(path, { withFileTypes: true });
 
       const files = entities
         .filter((e) => !e.name.startsWith("."))
         .map((e) => ({
           name: e.name,
-          path: "/" + [baseName, path, e.name].filter(Boolean).join("/"),
+          path: [pathname, e.name].join("/"),
           isDirectory: e.isDirectory(),
         }))
         .sort((a, b) => {
@@ -90,15 +82,10 @@ const route = new Hono()
       throw new HTTPException(400, { message: "Files is empty!" });
     }
 
-    const pathSlices = data.path.split("/");
-    const baseName = pathSlices[1] || null;
-    const path = pathSlices.slice(2).join("/");
-    const baseDir = filesDirList.find((i) => i.name === baseName)?.path;
+    const { baseDir, path: targetDir } = getFilePath(data.path);
     if (!baseDir?.length) {
       throw new HTTPException(400, { message: "Path not found!" });
     }
-
-    const targetDir = [baseDir, path].join("/");
 
     // files.forEach((file) => {
     //   const filepath = targetDir + "/" + file.name;
@@ -124,15 +111,16 @@ const route = new Hono()
     const pathSlice = pathname.slice(pathname.indexOf("download") + 1);
     const baseName = pathSlice[0];
     const path = "/" + pathSlice.slice(1).join("/");
+    const filename = path.substring(1);
 
     try {
       if (!baseName?.length) {
-        throw new Error();
+        throw new Error("baseName is empty");
       }
 
       const baseDir = filesDirList.find((i) => i.name === baseName)?.path;
       if (!baseDir) {
-        throw new Error();
+        throw new Error("baseDir not found");
       }
 
       const filepath = baseDir + path;
@@ -141,7 +129,10 @@ const route = new Hono()
 
       if (dlFile) {
         c.header("Content-Type", "application/octet-stream");
-        c.header("Content-Disposition", `attachment; filename="${path}"`);
+        c.header(
+          "Content-Disposition",
+          `attachment; filename="${encodeURIComponent(filename)}"`
+        );
       } else {
         c.header("Content-Type", getMimeType(filepath));
       }
@@ -177,23 +168,24 @@ const route = new Hono()
 
       return c.body(stream, 206);
     } catch (err) {
+      // console.log("err", err);
       throw new HTTPException(404, { message: "Not Found!" });
     }
   });
 
-function getFilePath(path: string) {
-  const pathSlices = path.split("/");
+function getFilePath(path?: string) {
+  const pathSlices =
+    path
+      ?.replace(/\/{2,}/g, "/")
+      .replace(/\/$/, "")
+      .split("/") || [];
   const baseName = pathSlices[1] || null;
   const filePath = pathSlices.slice(2).join("/");
-
   const baseDir = filesDirList.find((i) => i.name === baseName)?.path;
-  if (!baseDir?.length) {
-    throw new HTTPException(400, { message: "Path not found!" });
-  }
 
   return {
-    path: [baseDir, filePath].join("/"),
-    pathname: ["", baseName, filePath].join("/"),
+    path: [baseDir || "", filePath].join("/").replace(/\/$/, ""),
+    pathname: ["", baseName, filePath].join("/").replace(/\/$/, ""),
     baseName,
     baseDir,
     filePath,

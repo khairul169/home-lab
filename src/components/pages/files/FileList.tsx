@@ -87,4 +87,4 @@ const FileItemList = ({
   );
 };
 
-export default FileList;
+export default React.memo(FileList);

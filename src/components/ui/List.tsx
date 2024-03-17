@@ -18,11 +18,15 @@ type ListItemProps = {
   className?: any;
   children: React.ReactNode;
   icon?: React.ReactNode;
+  onPress?: () => void;
 };
 
-const ListItem = ({ className, icon, children }: ListItemProps) => {
+const ListItem = ({ className, icon, children, onPress }: ListItemProps) => {
   return (
-    <Pressable style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}>
+    <Pressable
+      style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+      onPress={onPress}
+    >
       <HStack className={cn("py-2 border-b border-gray-200", className)}>
         {icon ? (
           <Slot.Text style={cn("text-gray-800 text-xl w-8")}>{icon}</Slot.Text>
