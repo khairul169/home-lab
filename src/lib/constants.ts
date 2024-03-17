@@ -3,3 +3,7 @@ export const BASEURL = __DEV__
   : location.protocol + "//" + location.host;
 
 export const API_BASEURL = BASEURL + "/api";
+export const WS_BASEURL = BASEURL.replace("https://", "wss://").replace(
+  "http://",
+  "ws://"
+);

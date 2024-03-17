@@ -17,12 +17,17 @@ const Apps = (props: Props) => {
     {
       name: "Files",
       icon: <Ionicons name="folder" />,
-      path: "files/index",
+      path: "files",
     },
     {
       name: "Terminal",
       icon: <Ionicons name="terminal" />,
       path: "terminal",
+    },
+    {
+      name: "VNC",
+      icon: <Ionicons name="eye" />,
+      path: "vnc",
     },
     {
       name: "Turn on PC",

@@ -7,7 +7,7 @@ import Box from "@ui/Box";
 import Text from "@ui/Text";
 import React, { useEffect, useRef } from "react";
 import "xterm/css/xterm.css";
-import { BASEURL } from "@/lib/constants";
+import { BASEURL, WS_BASEURL } from "@/lib/constants";
 import { useAuth } from "@/stores/authStore";
 import { Stack } from "expo-router";
 import BackButton from "@ui/BackButton";
@@ -28,11 +28,7 @@ const TerminalPage = () => {
     const fitAddon = new FitAddon();
     term.loadAddon(fitAddon);
 
-    const baseUrl = BASEURL.replace("https://", "wss://").replace(
-      "http://",
-      "ws://"
-    );
-    const socket = new WebSocket(baseUrl + "/terminal?token=" + token);
+    const socket = new WebSocket(WS_BASEURL + "/terminal?token=" + token);
     const attachAddon = new AttachAddon(socket);
 
     // Attach the socket to term

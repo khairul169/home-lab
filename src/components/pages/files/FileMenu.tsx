@@ -4,11 +4,10 @@ import { FileItem } from "@/types/files";
 import Text from "@ui/Text";
 import List from "@ui/List";
 import { Ionicons } from "@ui/Icons";
-import { cn } from "@/lib/utils";
 import ActionSheet from "@ui/ActionSheet";
 import { HStack } from "@ui/Stack";
 import Button from "@ui/Button";
-import { openFile } from "@/app/apps/files/utils";
+import { openFile } from "@/app/apps/lib";
 
 type Store = {
   isVisible: boolean;

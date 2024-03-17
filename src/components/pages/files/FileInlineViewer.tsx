@@ -7,7 +7,7 @@ import Text from "@ui/Text";
 import React, { useRef } from "react";
 import Modal from "react-native-modal";
 import { Video, ResizeMode } from "expo-av";
-import { getFileUrl, openFile } from "@/app/apps/files/utils";
+import { getFileUrl, openFile } from "@/app/apps/lib";
 import { Image } from "react-native";
 import AudioPlayer from "@/components/containers/AudioPlayer";
 import { FileItem } from "@/types/files";

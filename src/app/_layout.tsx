@@ -39,7 +39,11 @@ const RootLayout = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <StatusBar style="auto" />
-      <View style={cn("flex-1 bg-[#f2f7fb]", { paddingTop: insets.top })}>
+      <View
+        style={cn("flex-1 bg-[#f2f7fb] overflow-hidden", {
+          paddingTop: insets.top,
+        })}
+      >
         <Stack
           screenOptions={{ contentStyle: { backgroundColor: "#f2f7fb" } }}
         />
