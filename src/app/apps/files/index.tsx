@@ -108,16 +108,7 @@ const FilesPage = () => {
         />
       </FileDrop>
 
-      <FileInlineViewer
-        file={viewFile}
-        onClose={() => {
-          if (router.canGoBack()) {
-            router.back();
-          } else {
-            router.replace("/apps/files");
-          }
-        }}
-      />
+      <FileInlineViewer file={viewFile} onClose={() => setViewFile(null)} />
     </FilesContext.Provider>
   );
 };
