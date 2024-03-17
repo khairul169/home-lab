@@ -1,9 +1,7 @@
 import { WebSocketServer } from "ws";
 import { verifyToken } from "./lib/jwt";
 import { createTerminalSession } from "./lib/terminal";
-import { websockify } from "./lib/websockify";
-
-const VNC_PORT = parseInt(process.env.VNC_PORT || "") || 5901;
+import { createVNCSession } from "./lib/vnc";
 
 const createWsServer = (server: any) => {
   const wss = new WebSocketServer({ server: server as never });
@@ -25,7 +23,7 @@ const createWsServer = (server: any) => {
     }
 
     if (url.pathname === "/vnc") {
-      websockify(ws, "localhost", VNC_PORT);
+      createVNCSession(ws);
     }
 
     ws.on("error", console.error);
