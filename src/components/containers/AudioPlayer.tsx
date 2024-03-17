@@ -167,7 +167,10 @@ const AudioPlayer = ({ path, uri }: Props) => {
               ((status?.positionMillis || 0) / (status?.durationMillis || 1)) *
               100
             }
-            containerStyle={cn("w-full my-4 md:my-8")}
+            thumbStyle={cn("bg-blue-500")}
+            trackStyle={cn("bg-white/30 rounded-full h-2")}
+            minimumTrackTintColor="#6366F1"
+            containerStyle={cn("w-full max-w-3xl mx-auto my-4 md:my-8")}
             onValueChange={async (value) => {
               if (!soundRef.current) {
                 return;
