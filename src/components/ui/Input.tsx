@@ -33,6 +33,7 @@ const BaseInput = ({
           "border border-gray-300 rounded-lg px-3 h-10 w-full",
           inputClassName
         )}
+        placeholderTextColor="#787878"
         {...props}
       />
 

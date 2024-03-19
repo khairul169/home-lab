@@ -4,7 +4,7 @@ import api from "@/lib/api";
 import { useAuth } from "@/stores/authStore";
 import BackButton from "@ui/BackButton";
 import Input from "@ui/Input";
-import { Stack, useLocalSearchParams } from "expo-router";
+import { Stack } from "expo-router";
 import React, { useState } from "react";
 import { useMutation, useQuery } from "react-query";
 import FileDrop from "@/components/pages/files/FileDrop";
@@ -16,6 +16,9 @@ import FileInlineViewer from "@/components/pages/files/FileInlineViewer";
 import { FilesContext } from "@/components/pages/files/FilesContext";
 import { FileItem } from "@/types/files";
 import Head from "@/components/utility/Head";
+import Container from "@ui/Container";
+import FileUpload from "@/components/pages/files/FileUpload";
+import ActionButton from "@/components/pages/files/ActionButton";
 
 const FilesPage = () => {
   const { isLoggedIn } = useAuth();
@@ -65,48 +68,53 @@ const FilesPage = () => {
   }
 
   return (
-    <FilesContext.Provider value={{ files: data, viewFile, setViewFile }}>
+    <FilesContext.Provider
+      value={{
+        path: params.path,
+        files: data,
+        viewFile,
+        setViewFile,
+        refresh: refetch,
+      }}
+    >
       <Head title="Files" />
       <Stack.Screen
         options={{ headerLeft: () => <BackButton />, title: "Files" }}
       />
 
-      <HStack className="px-2 py-2 bg-white gap-2">
-        <Button
-          icon={<Ionicons name="chevron-back" />}
-          disabled={parentPath == null}
-          className="px-3 border-gray-300"
-          labelClasses="text-gray-500"
-          variant="outline"
-          onPress={() => setParams({ ...params, path: parentPath })}
-        />
-        <Button
-          icon={<Ionicons name="home-outline" />}
-          className="px-3 border-gray-300"
-          labelClasses="text-gray-500"
-          variant="outline"
-          onPress={() => setParams({ ...params, path: "" })}
-        />
-        <Input
-          placeholder="/"
-          value={params.path}
-          onChangeText={(path) => setParams({ path })}
-          className="flex-1"
-        />
-      </HStack>
+      <Container className="flex-1">
+        <HStack className="px-2 py-2 bg-white gap-2">
+          <ActionButton
+            icon={<Ionicons name="chevron-back" />}
+            disabled={parentPath == null}
+            onPress={() => setParams({ ...params, path: parentPath })}
+          />
+          <ActionButton
+            icon={<Ionicons name="home-outline" />}
+            onPress={() => setParams({ ...params, path: "" })}
+          />
+          <Input
+            placeholder="/"
+            value={params.path}
+            onChangeText={(path) => setParams({ path })}
+            className="flex-1"
+          />
+          <FileUpload />
+        </HStack>
 
-      <FileDrop onFileDrop={onFileDrop} isDisabled={upload.isLoading}>
-        <FileList
-          files={data}
-          onSelect={(file) => {
-            if (file.isDirectory) {
-              setParams({ ...params, path: file.path });
-            } else {
-              setViewFile(file);
-            }
-          }}
-        />
-      </FileDrop>
+        <FileDrop onFileDrop={onFileDrop} isDisabled={upload.isLoading}>
+          <FileList
+            files={data}
+            onSelect={(file) => {
+              if (file.isDirectory) {
+                setParams({ ...params, path: file.path });
+              } else {
+                setViewFile(file);
+              }
+            }}
+          />
+        </FileDrop>
+      </Container>
 
       <FileInlineViewer file={viewFile} onClose={() => setViewFile(null)} />
     </FilesContext.Provider>

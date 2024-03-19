@@ -1,6 +1,7 @@
 import { Mime } from "mime/lite";
 import standardTypes from "mime/types/standard.js";
 import otherTypes from "mime/types/other.js";
+import { nanoid } from "nanoid";
 
 export const formatBytes = (bytes: number) => {
   const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
@@ -28,4 +29,37 @@ mime.define(
 
 export const getMimeType = (path: string) => {
   return mime.getType(path) || "application/octet-stream";
+};
+
+export const slugify = (text: string, lowerCase = true) => {
+  let str = text.replace(/^\s+|\s+$/g, "");
+
+  // Make the string lowercase
+  if (lowerCase) {
+    str = str.toLowerCase();
+  }
+
+  // Remove accents, swap ñ for n, etc
+  const from =
+    "ÁÄÂÀÃÅČÇĆĎÉĚËÈÊẼĔȆÍÌÎÏŇÑÓÖÒÔÕØŘŔŠŤÚŮÜÙÛÝŸŽáäâàãåčçćďéěëèêẽĕȇíìîïňñóöòôõøðřŕšťúůüùûýÿžþÞĐđßÆa·/_,:;";
+  const to =
+    "AAAAAACCCDEEEEEEEEIIIINNOOOOOORRSTUUUUUYYZaaaaaacccdeeeeeeeeiiiinnooooooorrstuuuuuyyzbBDdBAa------";
+  for (let i = 0, l = from.length; i < l; i += 1) {
+    str = str.replace(new RegExp(from.charAt(i), "g"), to.charAt(i));
+  }
+
+  // Remove invalid chars
+  str = str
+    // .replace(/[^A-Za-z0-9 -]/g, '')
+    .replace(/[\\/:"*?<>|]/g, "")
+    // Collapse whitespace and replace by -
+    .replace(/\s+/g, "-")
+    // Collapse dashes
+    .replace(/-+/g, "-");
+
+  if (!str.length) {
+    str = nanoid();
+  }
+
+  return str;
 };

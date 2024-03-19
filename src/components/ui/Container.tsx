@@ -13,7 +13,7 @@ const Container = ({
   children,
   scrollable = false,
 }: ContainerProps) => {
-  const style = cn("mx-auto w-full max-w-xl", className);
+  const style = cn("mx-auto w-full max-w-3xl", className);
 
   if (scrollable) {
     return (
