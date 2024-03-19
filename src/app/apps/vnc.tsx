@@ -10,6 +10,7 @@ import React, { useEffect, useRef } from "react";
 import { Platform } from "react-native";
 import { VncScreen, VncScreenHandle } from "react-vnc";
 import { openFullscreen } from "./lib";
+import Head from "@/components/utility/Head";
 
 const VncPage = () => {
   const containerRef = useRef<HTMLDivElement>(null!);
@@ -26,6 +27,7 @@ const VncPage = () => {
 
   return (
     <>
+      <Head title="VNC" />
       <Stack.Screen
         options={{
           title: "VNC",

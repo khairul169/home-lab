@@ -12,6 +12,7 @@ import Box from "@ui/Box";
 import Apps from "../components/pages/home/Apps";
 import { Stack } from "expo-router";
 import { useIsFocused } from "@/hooks/useIsFocused";
+import Head from "@/components/utility/Head";
 
 const HomePage = () => {
   const { isLoggedIn } = useAuth();
@@ -30,6 +31,7 @@ const HomePage = () => {
 
   return (
     <Container scrollable className="px-4 md:px-8 max-w-none py-8">
+      <Head />
       <Stack.Screen options={{ headerShown: false, title: "Home Lab" }} />
 
       <HStack className="items-start gap-8">

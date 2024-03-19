@@ -7,3 +7,5 @@ export const WS_BASEURL = BASEURL.replace("https://", "wss://").replace(
   "http://",
   "ws://"
 );
+
+export const APP_NAME = "Home Lab";

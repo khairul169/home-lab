@@ -11,6 +11,7 @@ import { BASEURL, WS_BASEURL } from "@/lib/constants";
 import { useAuth } from "@/stores/authStore";
 import { Stack } from "expo-router";
 import BackButton from "@ui/BackButton";
+import Head from "@/components/utility/Head";
 
 const isWeb = Platform.OS === "web";
 
@@ -82,6 +83,7 @@ const TerminalPage = () => {
 
   return (
     <>
+      <Head title="Terminal" />
       <Stack.Screen
         options={{ title: "Terminal", headerLeft: () => <BackButton /> }}
       />

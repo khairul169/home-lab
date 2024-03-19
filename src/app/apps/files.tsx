@@ -15,6 +15,7 @@ import { Ionicons } from "@ui/Icons";
 import FileInlineViewer from "@/components/pages/files/FileInlineViewer";
 import { FilesContext } from "@/components/pages/files/FilesContext";
 import { FileItem } from "@/types/files";
+import Head from "@/components/utility/Head";
 
 const FilesPage = () => {
   const { isLoggedIn } = useAuth();
@@ -65,6 +66,7 @@ const FilesPage = () => {
 
   return (
     <FilesContext.Provider value={{ files: data, viewFile, setViewFile }}>
+      <Head title="Files" />
       <Stack.Screen
         options={{ headerLeft: () => <BackButton />, title: "Files" }}
       />
