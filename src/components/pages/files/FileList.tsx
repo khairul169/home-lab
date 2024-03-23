@@ -11,9 +11,9 @@ import FileMenu, { openFileMenu } from "./FileMenu";
 
 type FileListProps = {
   files?: FileItem[];
-  onSelect?: (file: FileItem) => void;
+  onSelect?: (file: FileItem, idx: number) => void;
   // onMenu?: (file: FileItem) => void;
-  onLongPress?: (file: FileItem) => void;
+  onLongPress?: (file: FileItem, idx: number) => void;
 };
 
 const FileList = ({ files, onSelect, onLongPress }: FileListProps) => {
@@ -23,11 +23,11 @@ const FileList = ({ files, onSelect, onLongPress }: FileListProps) => {
         style={cn("flex-1")}
         contentContainerStyle={cn("bg-white")}
         data={files || []}
-        renderItem={({ item }) => (
+        renderItem={({ item, index }) => (
           <FileItemList
             file={item}
-            onPress={() => onSelect?.(item)}
-            onLongPress={() => onLongPress?.(item)}
+            onPress={() => onSelect?.(item, index)}
+            onLongPress={() => onLongPress?.(item, index)}
             onMenuPress={() => openFileMenu(item)}
           />
         )}

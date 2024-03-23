@@ -7,6 +7,7 @@ import Button from "@ui/Button";
 import { useNavigation } from "expo-router";
 import { showDialog } from "@/stores/dialogStore";
 import { wakePcUp } from "@/app/apps/lib";
+import { audioPlayerStore } from "@/stores/audioPlayerStore";
 
 type Props = ComponentProps<typeof Box>;
 
@@ -18,6 +19,11 @@ const Apps = (props: Props) => {
       name: "Files",
       icon: <Ionicons name="folder" />,
       path: "files",
+    },
+    {
+      name: "Music",
+      icon: <Ionicons name="musical-notes" />,
+      action: () => audioPlayerStore.setState({ expanded: true }),
     },
     {
       name: "Terminal",

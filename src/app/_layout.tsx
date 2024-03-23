@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Slot, Stack, router, usePathname } from "expo-router";
+import { Stack, router, usePathname } from "expo-router";
 import { QueryClientProvider } from "react-query";
 import queryClient from "@/lib/queryClient";
 import { View } from "react-native";
@@ -12,6 +12,9 @@ import { useStore } from "zustand";
 import authStore from "@/stores/authStore";
 import { toastStore } from "@/stores/toastStore";
 import Dialog from "@ui/Dialog";
+import AudioPlayerProvider from "@/components/containers/AudioPlayerProvider";
+import AudioPlayer from "@/components/pages/music/AudioPlayer";
+import MiniPlayer from "@/components/pages/music/MiniPlayer";
 
 const RootLayout = () => {
   const insets = useSafeAreaInsets();
@@ -40,13 +43,15 @@ const RootLayout = () => {
     <QueryClientProvider client={queryClient}>
       <StatusBar style="auto" />
       <View
-        style={cn("flex-1 bg-[#f2f7fb] overflow-hidden", {
+        style={cn("flex-1 bg-[#f2f7fb] overflow-hidden relative", {
           paddingTop: insets.top,
         })}
       >
         <Stack
           screenOptions={{ contentStyle: { backgroundColor: "#f2f7fb" } }}
         />
+        <MiniPlayer />
+        <AudioPlayer />
       </View>
       <Toast
         ref={(ref) => {
@@ -54,6 +59,7 @@ const RootLayout = () => {
         }}
       />
       <Dialog />
+      <AudioPlayerProvider />
     </QueryClientProvider>
   );
 };

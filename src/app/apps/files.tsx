@@ -19,6 +19,8 @@ import Head from "@/components/utility/Head";
 import Container from "@ui/Container";
 import FileUpload from "@/components/pages/files/FileUpload";
 import ActionButton from "@/components/pages/files/ActionButton";
+import { getFileType } from "@/lib/utils";
+import { audioPlayer } from "@/stores/audioPlayerStore";
 
 const FilesPage = () => {
   const { isLoggedIn } = useAuth();
@@ -105,12 +107,17 @@ const FilesPage = () => {
         <FileDrop onFileDrop={onFileDrop} isDisabled={upload.isLoading}>
           <FileList
             files={data}
-            onSelect={(file) => {
+            onSelect={(file, idx) => {
               if (file.isDirectory) {
-                setParams({ path: file.path });
-              } else {
-                setViewFile(file);
+                return setParams({ path: file.path });
               }
+
+              const fileType = getFileType(file.path);
+              if (fileType === "audio") {
+                return audioPlayer.play(data, idx);
+              }
+
+              setViewFile(file);
             }}
           />
         </FileDrop>

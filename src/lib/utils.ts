@@ -54,7 +54,13 @@ export const getFileType = (path?: string | null) => {
 };
 
 export const getFilename = (path?: string | null) => {
+  if (!path) {
+    return null;
+  }
+
   let fname = path.split("/").pop()?.split(".").slice(0, -1).join(".");
-  fname = fname.substring(0, fname.indexOf("?"));
+  if (fname.indexOf("?") > -1) {
+    fname = fname.substring(0, fname.indexOf("?"));
+  }
   return fname;
 };

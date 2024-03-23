@@ -9,7 +9,6 @@ import Modal from "react-native-modal";
 import { Video, ResizeMode } from "expo-av";
 import { getFileUrl, openFile } from "@/app/apps/lib";
 import { Image } from "react-native";
-import AudioPlayer from "@/components/containers/AudioPlayer";
 import { FileItem } from "@/types/files";
 
 type Props = {
@@ -34,10 +33,6 @@ const FileViewer = ({ file }: Pick<Props, "file">) => {
         shouldPlay
       />
     );
-  }
-
-  if (fileType === "audio") {
-    return <AudioPlayer path={file.path} uri={uri} />;
   }
 
   if (fileType === "image") {
