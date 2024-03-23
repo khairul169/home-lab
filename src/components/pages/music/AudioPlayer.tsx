@@ -60,11 +60,13 @@ const AudioPlayerView = React.memo(({ onClose }: { onClose: () => void }) => {
 
         <Box className="flex flex-col items-center justify-center p-8 flex-1 overflow-hidden">
           {mediaTags?.picture ? (
-            <Image
-              source={{ uri: mediaTags.picture }}
-              style={cn("w-full flex-1 max-h-[256px] mb-8")}
-              resizeMode="contain"
-            />
+            <Box className="aspect-square flex-1 max-h-[400px] mb-8">
+              <Image
+                source={{ uri: mediaTags.picture }}
+                style={cn("w-full h-full")}
+                resizeMode="cover"
+              />
+            </Box>
           ) : null}
 
           <Text className="text-white text-lg sm:text-xl">Now Playing</Text>
