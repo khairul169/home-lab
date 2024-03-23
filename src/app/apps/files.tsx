@@ -87,11 +87,11 @@ const FilesPage = () => {
           <ActionButton
             icon={<Ionicons name="chevron-back" />}
             disabled={parentPath == null}
-            onPress={() => setParams({ ...params, path: parentPath })}
+            onPress={() => setParams({ path: parentPath })}
           />
           <ActionButton
             icon={<Ionicons name="home-outline" />}
-            onPress={() => setParams({ ...params, path: "" })}
+            onPress={() => setParams({ path: "" })}
           />
           <Input
             placeholder="/"
@@ -107,7 +107,7 @@ const FilesPage = () => {
             files={data}
             onSelect={(file) => {
               if (file.isDirectory) {
-                setParams({ ...params, path: file.path });
+                setParams({ path: file.path });
               } else {
                 setViewFile(file);
               }

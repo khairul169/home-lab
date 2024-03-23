@@ -1,5 +1,5 @@
 import { AVPlaybackStatusSuccess, Audio } from "expo-av";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
 import jsmediatags from "jsmediatags/build2/jsmediatags";
 import { MediaTags } from "@/types/mediaTags";
 import Box from "../ui/Box";
@@ -20,6 +20,7 @@ import { Slider } from "@miblanchard/react-native-slider";
 import bgImage from "@/assets/images/audioplayer-bg.jpeg";
 import { FileItem } from "@/types/files";
 import Input from "@ui/Input";
+import { useAsyncStorage } from "@/hooks/useAsyncStorage";
 
 type Props = {
   path: string;
@@ -32,11 +33,21 @@ const AudioPlayer = ({ path, uri }: Props) => {
   const [curFileIdx, setFileIdx] = useState(-1);
   const [status, setStatus] = useState<AVPlaybackStatusSuccess | null>(null);
   const [mediaTags, setMediaTags] = useState<MediaTags | null>(null);
+  const [playback, setPlayback] = useAsyncStorage("playback", {
+    repeat: false,
+    shuffle: false,
+  });
   const filename = getFilename(decodeURIComponent(uri));
 
   const playlist = useMemo(() => {
-    return files.filter((f) => getFileType(f.name) === "audio");
-  }, [files]);
+    let items = files.filter((f) => getFileType(f.name) === "audio");
+
+    if (playback.shuffle) {
+      items = items.sort(() => Math.random() - 0.5);
+    }
+
+    return items;
+  }, [files, playback.shuffle]);
 
   const playIdx = (idx: number) => {
     if (!playlist.length || idx < 0) {
@@ -49,12 +60,12 @@ const AudioPlayer = ({ path, uri }: Props) => {
     }
   };
 
-  const playNext = (increment = 1) => {
-    if (!playlist.length || curFileIdx < 0) {
+  const playNext = (increment = 1, startIdx?: number) => {
+    const curIdx = startIdx ?? curFileIdx;
+    if (!playlist.length || curIdx < 0) {
       return;
     }
-
-    playIdx(curFileIdx + increment);
+    playIdx(curIdx + increment);
   };
 
   useEffect(() => {
@@ -65,12 +76,14 @@ const AudioPlayer = ({ path, uri }: Props) => {
     const fileIdx = playlist.findIndex((file) => path === file.path);
     setFileIdx(fileIdx);
 
-    const onNext = () => playIdx(fileIdx + 1);
+    const onNext = () => playNext(1, fileIdx);
 
     async function play() {
       try {
         const { sound } = await Audio.Sound.createAsync({ uri });
         soundRef.current = sound;
+
+        sound.setIsLoopingAsync(playback.repeat);
         sound.setOnPlaybackStatusUpdate((st: AVPlaybackStatusSuccess) => {
           setStatus(st as any);
 
@@ -93,31 +106,32 @@ const AudioPlayer = ({ path, uri }: Props) => {
       }
     }
 
-    // function loadMediaTags() {
-    //   const tagsReader = new jsmediatags.Reader(uri + "&dl=true");
-    //   setMediaTags(null);
+    function loadMediaTags() {
+      const tagsReader = new jsmediatags.Reader(uri + "&dl=true");
+      setMediaTags(null);
 
-    //   tagsReader.read({
-    //     onSuccess: (result: any) => {
-    //       const mediaTagsResult = { ...result };
+      tagsReader.read({
+        onSuccess: (result: any) => {
+          const mediaTagsResult = { ...result };
 
-    //       if (result?.tags?.picture) {
-    //         const { data, format } = result.tags.picture;
-    //         let base64String = "";
-    //         for (let i = 0; i < data.length; i++) {
-    //           base64String += String.fromCharCode(data[i]);
-    //         }
-    //         mediaTagsResult.picture = `data:${format};base64,${base64encode(
-    //           base64String
-    //         )}`;
-    //         delete data?.tags?.picture;
-    //       }
+          if (result?.tags?.picture) {
+            const { data, format } = result.tags.picture;
+            let base64String = "";
+            for (let i = 0; i < data.length; i++) {
+              base64String += String.fromCharCode(data[i]);
+            }
+            mediaTagsResult.picture = `data:${format};base64,${base64encode(
+              base64String
+            )}`;
+            delete data?.tags?.picture;
+          }
 
-    //       setMediaTags(mediaTagsResult);
-    //     },
-    //   });
-    // }
+          setMediaTags(mediaTagsResult);
+        },
+      });
+    }
 
+    loadMediaTags();
     play();
 
     return () => {
@@ -125,6 +139,12 @@ const AudioPlayer = ({ path, uri }: Props) => {
       soundRef.current = null;
     };
   }, [uri, path, playlist]);
+
+  useEffect(() => {
+    if (status?.isLoaded) {
+      soundRef.current?.setIsLoopingAsync(playback.repeat);
+    }
+  }, [playback.repeat, status?.isLoaded]);
 
   return (
     <HStack className="flex-1 items-stretch">
@@ -160,42 +180,62 @@ const AudioPlayer = ({ path, uri }: Props) => {
             </Text>
           ) : null}
 
-          <Slider
-            minimumValue={0}
-            maximumValue={100}
-            value={
-              ((status?.positionMillis || 0) / (status?.durationMillis || 1)) *
-              100
-            }
-            thumbStyle={cn("bg-blue-500")}
-            trackStyle={cn("bg-white/30 rounded-full h-2")}
-            minimumTrackTintColor="#6366F1"
-            containerStyle={cn("w-full max-w-3xl mx-auto my-4 md:my-8")}
-            onValueChange={async (value) => {
-              if (!soundRef.current) {
-                return;
+          <Box className="w-full max-w-3xl mx-auto my-4 md:my-8">
+            <Slider
+              minimumValue={0}
+              maximumValue={100}
+              value={
+                ((status?.positionMillis || 0) /
+                  (status?.durationMillis || 1)) *
+                100
               }
+              thumbStyle={cn("bg-blue-500")}
+              trackStyle={cn("bg-white/30 rounded-full h-2")}
+              minimumTrackTintColor="#6366F1"
+              onValueChange={async (value) => {
+                if (!soundRef.current) {
+                  return;
+                }
 
-              if (!status?.isPlaying) {
-                await soundRef.current.playAsync();
-              }
+                if (!status?.isPlaying) {
+                  await soundRef.current.playAsync();
+                }
 
-              const [progress] = value;
-              const pos = (progress / 100.0) * (status?.durationMillis || 0);
-              soundRef.current.setPositionAsync(pos);
-            }}
-          />
+                const [progress] = value;
+                const pos = (progress / 100.0) * (status?.durationMillis || 0);
+                soundRef.current.setPositionAsync(pos);
+              }}
+            />
+            <HStack className="justify-between">
+              <Text className="text-white">
+                {formatTime(status?.positionMillis || 0)}
+              </Text>
+              <Text className="text-white">
+                {formatTime(status?.durationMillis || 0)}
+              </Text>
+            </HStack>
+          </Box>
 
           <HStack className="gap-4">
             <Button
-              icon={<Ionicons name="chevron-back" />}
-              iconClassName="text-[32px] md:text-[40px]"
+              icon={<Ionicons name="repeat" />}
+              iconClassName={`text-[24px] md:text-[32px] text-white ${
+                playback.repeat ? "opacity-100" : "opacity-50"
+              }`}
+              variant="ghost"
+              className="w-16 h-16 md:w-20 md:h-20 rounded-full"
+              onPress={() => setPlayback({ repeat: !playback.repeat })}
+            />
+            <Button
+              icon={<Ionicons name="play-back" />}
+              iconClassName="text-[24px] md:text-[32px] text-white"
+              variant="ghost"
               className="w-16 h-16 md:w-20 md:h-20 rounded-full"
               onPress={() => playNext(-1)}
             />
             <Button
               icon={<Ionicons name={status?.isPlaying ? "pause" : "play"} />}
-              iconClassName="text-[40px] md:text-[48px]"
+              iconClassName="text-[32px] md:text-[36px]"
               className="w-20 h-20 md:w-24 md:h-24 rounded-full"
               onPress={() => {
                 if (!soundRef.current) {
@@ -209,10 +249,20 @@ const AudioPlayer = ({ path, uri }: Props) => {
               }}
             />
             <Button
-              icon={<Ionicons name="chevron-forward" />}
-              iconClassName="text-[32px] md:text-[40px]"
+              icon={<Ionicons name="play-forward" />}
+              iconClassName="text-[24px] md:text-[32px] text-white"
+              variant="ghost"
               className="w-16 h-16 md:w-20 md:h-20 rounded-full"
               onPress={() => playNext()}
+            />
+            <Button
+              icon={<Ionicons name="shuffle" />}
+              iconClassName={`text-[24px] md:text-[32px] text-white ${
+                playback.shuffle ? "opacity-100" : "opacity-50"
+              }`}
+              variant="ghost"
+              className="w-16 h-16 md:w-20 md:h-20 rounded-full"
+              onPress={() => setPlayback({ shuffle: !playback.shuffle })}
             />
           </HStack>
         </Box>
@@ -229,14 +279,29 @@ type PlaylistProps = {
   playIdx: (idx: number) => void;
 };
 
+const PLAYLIST_ITEM_HEIGHT = 49;
+
 const Playlist = ({ playlist, currentIdx, playIdx }: PlaylistProps) => {
+  const containerRef = useRef<any>();
   const [search, setSearch] = useState("");
 
-  const list = useMemo(() => {
-    if (!search?.length) {
-      return playlist;
+  useEffect(() => {
+    if (currentIdx >= 0) {
+      containerRef.current?.scrollToIndex({
+        index: currentIdx,
+        animated: true,
+      });
     }
-    return playlist.filter((i) =>
+  }, [currentIdx]);
+
+  const list = useMemo(() => {
+    const items = playlist.map((i, idx) => ({ ...i, idx }));
+
+    if (!search?.length) {
+      return items;
+    }
+
+    return items.filter((i) =>
       i.name.toLowerCase().includes(search.toLowerCase())
     );
   }, [search, playlist]);
@@ -257,15 +322,22 @@ const Playlist = ({ playlist, currentIdx, playIdx }: PlaylistProps) => {
       </HStack>
 
       <FlatList
+        ref={containerRef}
         data={list}
         keyExtractor={(i) => i.path}
-        renderItem={({ item, index }) => (
+        renderItem={({ item }) => (
           <PlaylistItem
             file={item}
-            isCurrent={index === currentIdx}
-            onPress={() => playIdx(index)}
+            isCurrent={item.idx === currentIdx}
+            onPress={() => playIdx(item.idx)}
           />
         )}
+        onScrollToIndexFailed={({ index }) => {
+          containerRef.current?.scrollToOffset({
+            offset: (index ?? 0) * PLAYLIST_ITEM_HEIGHT,
+            animated: true,
+          });
+        }}
       />
     </Box>
   );
@@ -292,5 +364,11 @@ const PlaylistItem = ({ file, isCurrent, onPress }: PlaylistItemProps) => {
     </Pressable>
   );
 };
+
+function formatTime(time: number) {
+  const minutes = Math.floor(time / 60 / 1000);
+  const seconds = Math.floor((time / 1000) % 60);
+  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+}
 
 export default AudioPlayer;
