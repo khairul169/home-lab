@@ -114,6 +114,7 @@ const FilesPage = () => {
 
               const fileType = getFileType(file.path);
               if (fileType === "audio") {
+                audioPlayer.expand();
                 return audioPlayer.play(data, idx);
               }
 

@@ -1,8 +1,10 @@
 import { getFileUrl } from "@/app/apps/lib";
+import { fetchAPI } from "@/lib/api";
+import { API_BASEURL } from "@/lib/constants";
 import { base64encode } from "@/lib/utils";
 import { audioPlayer, audioPlayerStore } from "@/stores/audioPlayerStore";
+import authStore from "@/stores/authStore";
 import { AVPlaybackStatusSuccess, Audio } from "expo-av";
-import jsmediatags from "jsmediatags/build2/jsmediatags";
 import { useEffect, useRef } from "react";
 import { useStore } from "zustand";
 
@@ -48,29 +50,18 @@ const AudioPlayerProvider = () => {
       }
     }
 
-    function loadMediaTags() {
-      const tagsReader = new jsmediatags.Reader(uri + "&dl=true");
+    async function loadMediaTags() {
       audioPlayerStore.setState({ mediaTags: null });
 
-      tagsReader.read({
-        onSuccess: (result: any) => {
-          const mediaTagsResult = { ...result };
+      try {
+        const url =
+          `${API_BASEURL}/files/id3-tags${fileData.path}?token=` +
+          authStore.getState().token;
 
-          if (result?.tags?.picture) {
-            const { data, format } = result.tags.picture;
-            let base64String = "";
-            for (let i = 0; i < data.length; i++) {
-              base64String += String.fromCharCode(data[i]);
-            }
-            mediaTagsResult.picture = `data:${format};base64,${base64encode(
-              base64String
-            )}`;
-            delete data?.tags?.picture;
-          }
-
-          audioPlayerStore.setState({ mediaTags: mediaTagsResult });
-        },
-      });
+        const res = await fetchAPI(url);
+        const data = await res.json();
+        audioPlayerStore.setState({ mediaTags: data });
+      } catch (err) {}
     }
 
     loadMediaTags();

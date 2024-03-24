@@ -33,22 +33,14 @@ export class ApiError extends Error {
 
 async function fetchHandler(input: any, init?: RequestInit) {
   const token = authStore.getState().token;
+  const config = typeof input === "object" ? input : init || {};
 
-  if (init) {
-    init.headers = new Headers(init.headers);
-    if (token) {
-      init.headers.set("Authorization", `Bearer ${token}`);
-    }
+  config.headers = new Headers(config.headers);
+  if (token) {
+    config.headers.set("Authorization", `Bearer ${token}`);
   }
 
-  if (typeof input === "object") {
-    input.headers = new Headers(init.headers);
-    if (token) {
-      input.headers.set("Authorization", `Bearer ${token}`);
-    }
-  }
-
-  const res = await fetch(input, init);
+  const res = await fetch(input, config);
   await checkResponse(res);
 
   return res;
@@ -84,5 +76,6 @@ export {
   InferResponseType,
   ClientRequestOptions,
   ClientResponse,
+  fetchHandler as fetchAPI,
 };
 export default api;

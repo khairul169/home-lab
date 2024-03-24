@@ -101,6 +101,10 @@ const seek = async (progress: number) => {
   sound.setPositionAsync(pos);
 };
 
+const expand = () => {
+  audioPlayerStore.setState({ expanded: true });
+};
+
 export const audioPlayer = {
   store: audioPlayerStore,
   play,
@@ -108,4 +112,5 @@ export const audioPlayer = {
   prev,
   next,
   seek,
+  expand,
 };

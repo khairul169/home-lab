@@ -13,6 +13,12 @@ import Input from "@ui/Input";
 import { useStore } from "zustand";
 import { audioPlayer, audioPlayerStore } from "@/stores/audioPlayerStore";
 import Modal from "react-native-modal";
+import { getFileUrl } from "@/app/apps/lib";
+import { useQuery } from "react-query";
+import { API_BASEURL } from "@/lib/constants";
+import authStore from "@/stores/authStore";
+import { fetchAPI } from "@/lib/api";
+import { MediaTags } from "@/types/mediaTags";
 
 const AudioPlayer = () => {
   const expanded = useStore(audioPlayerStore, (i) => i.expanded);
@@ -41,7 +47,7 @@ const AudioPlayerView = React.memo(({ onClose }: { onClose: () => void }) => {
     <Box className="flex-1 items-stretch relative">
       <Box className="absolute -inset-10 -z-[1]">
         <Image
-          source={mediaTags?.picture ? { uri: mediaTags?.picture } : bgImage}
+          source={mediaTags?.image ? { uri: mediaTags.image } : bgImage}
           style={cn("absolute -inset-5 w-full h-full")}
           resizeMode="cover"
           blurRadius={10}
@@ -58,11 +64,11 @@ const AudioPlayerView = React.memo(({ onClose }: { onClose: () => void }) => {
           onPress={onClose}
         />
 
-        <Box className="flex flex-col items-center justify-center p-8 flex-1 overflow-hidden">
-          {mediaTags?.picture ? (
+        <Box className="flex flex-col items-center justify-center p-8 pt-20 flex-1 overflow-hidden">
+          {mediaTags?.image ? (
             <Box className="aspect-square flex-1 max-h-[400px] mb-8">
               <Image
-                source={{ uri: mediaTags.picture }}
+                source={{ uri: mediaTags.image }}
                 style={cn("w-full h-full")}
                 resizeMode="cover"
               />
@@ -74,11 +80,11 @@ const AudioPlayerView = React.memo(({ onClose }: { onClose: () => void }) => {
             className="text-white text-xl md:text-3xl mt-4"
             numberOfLines={1}
           >
-            {mediaTags?.tags?.title || filename}
+            {mediaTags?.title || filename}
           </Text>
-          {mediaTags?.tags?.artist ? (
+          {mediaTags?.artist ? (
             <Text className="text-white mt-2" numberOfLines={1}>
-              {mediaTags.tags.artist}
+              {mediaTags.artist}
             </Text>
           ) : null}
 
@@ -157,9 +163,9 @@ const AudioPlayerView = React.memo(({ onClose }: { onClose: () => void }) => {
   );
 });
 
-const PLAYLIST_ITEM_HEIGHT = 49;
+const PLAYLIST_ITEM_HEIGHT = 82;
 
-const Playlist = () => {
+const Playlist = React.memo(() => {
   const playlist = useStore(audioPlayerStore, (i) => i.playlist);
   const currentIdx = useStore(audioPlayerStore, (i) => i.currentIdx);
   const containerRef = useRef<any>();
@@ -204,9 +210,8 @@ const Playlist = () => {
 
         <FlatList
           ref={containerRef}
+          contentContainerStyle={cn("px-4")}
           data={list}
-          showsVerticalScrollIndicator={false}
-          showsHorizontalScrollIndicator={false}
           keyExtractor={(i) => i.path}
           renderItem={({ item }) => (
             <PlaylistItem
@@ -221,7 +226,7 @@ const Playlist = () => {
       </Box>
     </Box>
   );
-};
+});
 
 type PlaylistItemProps = {
   file: FileItem;
@@ -230,17 +235,43 @@ type PlaylistItemProps = {
 };
 
 const PlaylistItem = ({ file, isCurrent, onPress }: PlaylistItemProps) => {
+  const url =
+    `${API_BASEURL}/files/id3-tags${file.path}?token=` +
+    authStore.getState().token;
+  const { data: id3Tags } = useQuery<MediaTags>({
+    queryKey: ["id3-tags", file.path],
+    queryFn: () => fetchAPI(url).then((i) => i.json()),
+  });
+
   return (
     <Pressable
       onPress={onPress}
       style={cn(
-        "py-4 px-5 border-b border-white/10",
-        isCurrent && "bg-[#323232]"
+        "mb-4 flex flex-row items-center gap-4 border border-transparent",
+        isCurrent && "bg-white/10 border-white/20 rounded-lg overflow-hidden"
       )}
     >
-      <Text className="text-white" numberOfLines={1}>
-        {file.name}
-      </Text>
+      <Box className="bg-gray-800 w-16 h-16 flex items-center justify-center">
+        {id3Tags?.image ? (
+          <Image
+            source={{ uri: id3Tags.image }}
+            style={cn("w-full h-full")}
+            resizeMode="cover"
+          />
+        ) : (
+          <Ionicons name="musical-notes" style={cn("text-white text-2xl")} />
+        )}
+      </Box>
+      <Box className="py-2 flex-1">
+        <Text className="text-white font-bold" numberOfLines={1}>
+          {id3Tags?.title || file.name}
+        </Text>
+        {id3Tags?.artist ? (
+          <Text className="text-white mt-2" numberOfLines={1}>
+            {id3Tags?.artist}
+          </Text>
+        ) : null}
+      </Box>
     </Pressable>
   );
 };

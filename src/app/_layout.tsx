@@ -1,3 +1,4 @@
+import "./styles.css";
 import React, { useEffect, useState } from "react";
 import { Stack, router, usePathname } from "expo-router";
 import { QueryClientProvider } from "react-query";
