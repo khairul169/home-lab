@@ -175,3 +175,5 @@ dist
 .DS_Store
 
 !public/assets/node_modules
+storage/db/*
+!.gitkeep
