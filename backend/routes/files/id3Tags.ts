@@ -27,7 +27,7 @@ export const getId3Tags = async (c: Context) => {
       data.image = imgUrl.toString();
     }
 
-    tags = id3Tags;
+    tags = data;
   } catch (err) {}
 
   cached.set(tags);
