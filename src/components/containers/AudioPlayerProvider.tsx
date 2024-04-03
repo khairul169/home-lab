@@ -31,6 +31,12 @@ const AudioPlayerProvider = () => {
         sound.setIsLoopingAsync(repeat);
         sound.setOnPlaybackStatusUpdate((st: AVPlaybackStatusSuccess) => {
           const curDate = new Date();
+
+          if (st.didJustFinish) {
+            lastStatusRef.current = curDate;
+            return audioPlayer.next();
+          }
+
           const diff = curDate.getTime() - lastStatusRef.current.getTime();
           if (diff < 1000) {
             return;
@@ -38,10 +44,6 @@ const AudioPlayerProvider = () => {
 
           lastStatusRef.current = curDate;
           audioPlayerStore.setState({ status: st as any });
-
-          if (st.didJustFinish) {
-            audioPlayer.next();
-          }
         });
 
         await sound.playAsync();
