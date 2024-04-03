@@ -13,7 +13,6 @@ import Input from "@ui/Input";
 import { useStore } from "zustand";
 import { audioPlayer, audioPlayerStore } from "@/stores/audioPlayerStore";
 import Modal from "react-native-modal";
-import { getFileUrl } from "@/app/apps/lib";
 import { useQuery } from "react-query";
 import { API_BASEURL } from "@/lib/constants";
 import authStore from "@/stores/authStore";

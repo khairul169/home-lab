@@ -15,12 +15,14 @@ const buttonVariants = cva(
         ghost: "",
         link: "text-primary underline-offset-4",
         outline: "border border-primary",
+        icon: "",
       },
       size: {
         default: "h-10 px-4",
         sm: "h-8 px-2",
         lg: "h-12 px-8",
         icon: "h-10 w-10 px-0",
+        "icon-lg": "h-14 w-14 px-0",
       },
     },
     defaultVariants: {
@@ -39,12 +41,14 @@ const buttonTextVariants = cva("text-center font-medium", {
       ghost: "text-primary",
       link: "text-primary-foreground underline",
       outline: "text-primary",
+      icon: "text-secondary-foreground",
     },
     size: {
       default: "text-base",
       sm: "text-sm",
       lg: "text-xl",
       icon: "text-base",
+      "icon-lg": "text-lg",
     },
   },
   defaultVariants: {

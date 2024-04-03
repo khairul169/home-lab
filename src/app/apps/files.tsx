@@ -5,7 +5,7 @@ import { useAuth } from "@/stores/authStore";
 import BackButton from "@ui/BackButton";
 import Input from "@ui/Input";
 import { Stack } from "expo-router";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useMutation, useQuery } from "react-query";
 import FileDrop from "@/components/pages/files/FileDrop";
 import { showToast } from "@/stores/toastStore";
@@ -28,6 +28,9 @@ const FilesPage = () => {
     path: "",
   });
   const [viewFile, setViewFile] = useState<FileItem | null>(null);
+  const [isSearching, setSearching] = useState(false);
+  const [search, setSearch] = useState("");
+
   const parentPath =
     params.path.length > 0
       ? params.path.split("/").slice(0, -1).join("/")
@@ -65,6 +68,18 @@ const FilesPage = () => {
     }
   };
 
+  const files = useMemo(() => {
+    let items = [...(data || [])].map((item, idx) => ({ ...item, idx }));
+
+    if (search) {
+      items = items.filter((item) =>
+        item.name.toLowerCase().includes(search.toLowerCase())
+      );
+    }
+
+    return items;
+  }, [data, search]);
+
   if (!isLoggedIn) {
     return null;
   }
@@ -81,7 +96,34 @@ const FilesPage = () => {
     >
       <Head title="Files" />
       <Stack.Screen
-        options={{ headerLeft: () => <BackButton />, title: "Files" }}
+        options={{
+          headerLeft: () => <BackButton />,
+          title: "Files",
+          headerRight: () => (
+            <Button
+              variant="icon"
+              size="lg"
+              icon={<Ionicons name={!isSearching ? "search" : "close"} />}
+              onPress={() => {
+                setSearching(!isSearching);
+                setSearch("");
+              }}
+            />
+          ),
+          headerTitleAlign: isSearching ? "center" : undefined,
+          headerTitle: isSearching
+            ? () => (
+                <Input
+                  placeholder="Search..."
+                  value={search}
+                  onChangeText={setSearch}
+                  autoFocus
+                  className="lg:w-screen lg:max-w-3xl"
+                  leftElement={<Ionicons name="search" size={18} />}
+                />
+              )
+            : undefined,
+        }}
       />
 
       <Container className="flex-1">
@@ -106,8 +148,8 @@ const FilesPage = () => {
 
         <FileDrop onFileDrop={onFileDrop} isDisabled={upload.isLoading}>
           <FileList
-            files={data}
-            onSelect={(file, idx) => {
+            files={files}
+            onSelect={(file: FileItem & { idx: number }) => {
               if (file.isDirectory) {
                 return setParams({ path: file.path });
               }
@@ -115,7 +157,7 @@ const FilesPage = () => {
               const fileType = getFileType(file.path);
               if (fileType === "audio") {
                 audioPlayer.expand();
-                return audioPlayer.play(data, idx);
+                return audioPlayer.play(data, file.idx);
               }
 
               setViewFile(file);

@@ -1,7 +1,6 @@
 import { getFileUrl } from "@/app/apps/lib";
 import { fetchAPI } from "@/lib/api";
 import { API_BASEURL } from "@/lib/constants";
-import { base64encode } from "@/lib/utils";
 import { audioPlayer, audioPlayerStore } from "@/stores/audioPlayerStore";
 import authStore from "@/stores/authStore";
 import { AVPlaybackStatusSuccess, Audio } from "expo-av";
@@ -9,9 +8,10 @@ import { useEffect, useRef } from "react";
 import { useStore } from "zustand";
 
 const AudioPlayerProvider = () => {
-  const { currentIdx, playlist, repeat, status } = useStore(audioPlayerStore);
-
+  const { currentIdx, playlist, repeat, status, shouldPlay } =
+    useStore(audioPlayerStore);
   const soundRef = useRef<Audio.Sound | null>(null);
+  const lastStatusRef = useRef<Date>(new Date());
 
   useEffect(() => {
     if (!playlist?.length || currentIdx < 0) {
@@ -27,8 +27,16 @@ const AudioPlayerProvider = () => {
         soundRef.current = sound;
         audioPlayerStore.setState({ sound });
 
+        sound.setProgressUpdateIntervalAsync(1000);
         sound.setIsLoopingAsync(repeat);
         sound.setOnPlaybackStatusUpdate((st: AVPlaybackStatusSuccess) => {
+          const curDate = new Date();
+          const diff = curDate.getTime() - lastStatusRef.current.getTime();
+          if (diff < 1000) {
+            return;
+          }
+
+          lastStatusRef.current = curDate;
           audioPlayerStore.setState({ status: st as any });
 
           if (st.didJustFinish) {
@@ -65,17 +73,24 @@ const AudioPlayerProvider = () => {
     }
 
     loadMediaTags();
-    play();
+
+    if (shouldPlay) {
+      play();
+    }
 
     return () => {
-      soundRef.current?.unloadAsync();
-      soundRef.current = null;
+      const sound = soundRef.current;
+      if (sound) {
+        sound.unloadAsync();
+        sound.setOnPlaybackStatusUpdate(null);
+        soundRef.current = null;
+      }
     };
-  }, [currentIdx, playlist]);
+  }, [currentIdx, playlist, shouldPlay]);
 
   useEffect(() => {
-    if (status?.isLoaded) {
-      soundRef.current?.setIsLoopingAsync(repeat);
+    if (status?.isLoaded && soundRef.current) {
+      soundRef.current.setIsLoopingAsync(repeat);
     }
   }, [repeat, status?.isLoaded]);
 

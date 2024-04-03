@@ -19,6 +19,7 @@ type AudioPlayerStore = {
   status: AVPlaybackStatusSuccess | null;
   mediaTags: MediaTags | null;
   expanded: boolean;
+  shouldPlay: boolean;
 };
 
 export const audioPlayerStore = createStore(
@@ -32,6 +33,7 @@ export const audioPlayerStore = createStore(
       status: null,
       mediaTags: null,
       expanded: false,
+      shouldPlay: false,
     }),
     {
       name: "audioPlayer",
@@ -42,6 +44,7 @@ export const audioPlayerStore = createStore(
         status: null,
         mediaTags: null,
         expanded: false,
+        shouldPlay: false,
       }),
     }
   )
@@ -58,6 +61,7 @@ const play = (files: FileItem[], idx: number) => {
     currentIdx,
     status: null,
     mediaTags: null,
+    shouldPlay: true,
   });
 };
 
@@ -72,7 +76,14 @@ const advanceBy = (increment: number) => {
 };
 
 const togglePlay = async () => {
-  const { sound, status } = audioPlayerStore.getState();
+  const { sound, status, shouldPlay } = audioPlayerStore.getState();
+
+  if (!shouldPlay || !sound || !status?.isPlaying) {
+    console.log("shoud play toggle");
+    audioPlayerStore.setState({ shouldPlay: true });
+    return;
+  }
+
   if (!sound) {
     return;
   }
